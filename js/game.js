@@ -23,6 +23,7 @@ const state = {
   timeLeft: 0,
   gameActive: false,
   miniScore: 0,
+  activeTrap: null, // 'double' | 'shield' | null — consumed by applyScore
 };
 
 /* ===== TIMER HELPERS ===== */
@@ -63,12 +64,10 @@ function showScreen(id) {
 /* ===== REGISTER ===== */
 function registerPlayer() {
   const name = document.getElementById('reg-name').value.trim();
-  const email = document.getElementById('reg-email').value.trim();
-  if(!name || !email) { alert(state.lang==='ar'?'يرجى ملء جميع الحقول':'Please fill all fields'); return; }
+  if(!name) { alert(state.lang==='ar'?'يرجى إدخال اسمك':'Please enter your name'); return; }
   state.player.name = name;
-  state.player.email = email;
-  // load total score if exists
-  const saved = localStorage.getItem('thanwy_player_'+email);
+  state.player.email = name; // keep field for localStorage key compatibility
+  const saved = localStorage.getItem('thanwy_player_'+name);
   if(saved) { const d=JSON.parse(saved); state.player.totalScore=d.totalScore||0; }
   showScreen('track');
 }
@@ -327,6 +326,7 @@ function aiPlay() {
 function openQuestion(card, who) {
   cancelTimer();
   state.currentQ = { card, who, answered: false };
+  state.activeTrap = null;
 
   const text = card[state.lang];
   document.getElementById('q-subject').textContent = subjectName(card.subject);
@@ -373,8 +373,8 @@ function openQuestion(card, who) {
 }
 
 function setupTrapButtons(who) {
-  // Traps available only when player threw the card (AI is answering)
-  const canTrap = (who === 'player') && state.trapsUsed.player < 3;
+  // Player can use traps when AI threw the card (AI's question is displayed)
+  const canTrap = (who === 'ai') && state.trapsUsed.player < 3;
   const traps = state.traps.player;
   ['cancel','double','shield','reverse','swap'].forEach(t => {
     const btn = document.getElementById('trap-' + t);
@@ -461,11 +461,18 @@ function showExplanation(isCorrect, who) {
 }
 
 function applyScore(isCorrect, who) {
-  // who = 'ai'     → player was answering AI's card → player scores on correct
-  // who = 'player' → AI was answering player's card → AI scores on correct
+  // who = 'ai' → player answering AI's card → player scores on correct
+  // who = 'player' → AI answering player's card → AI scores on correct
+  const trap = state.activeTrap;
+  state.activeTrap = null; // consume
+
   if (who === 'ai') {
-    if (isCorrect) state.player.score += 1;
-    else state.p2score += 1;
+    if (isCorrect) {
+      const pts = (trap === 'double') ? 2 : 1;
+      state.player.score += pts;
+    } else {
+      if (trap !== 'shield') state.p2score += 1; // shield blocks AI scoring on player wrong
+    }
   } else {
     if (isCorrect) state.p2score += 1;
     else state.player.score += 1;
@@ -491,25 +498,68 @@ function nextTurn() {
 }
 
 function activateTrap(type) {
-  if (!state.currentQ || state.currentQ.who !== 'player') return; // only when AI is answering
+  if (!state.currentQ || state.currentQ.who !== 'ai') return;
   if (state.trapsUsed.player >= 3) return;
   if (!state.traps.player.includes(type)) return;
   state.trapsUsed.player++;
-  setupTrapButtons('player'); // refresh trap button states
+  // remove used trap so it can't be reused
+  state.traps.player = state.traps.player.filter(t => t !== type);
+  setupTrapButtons('ai');
   updateArenaUI();
   const msgs = {
-    ar: { cancel:'فخ الالغاء مفعل! تم الغاء السؤال', double:'فخ المضاعفة مفعل!', shield:'فخ الحماية مفعل!', reverse:'عكس النتيجة مفعل!', swap:'المبدل مفعل!' },
-    en: { cancel:'Cancel trap! Question cancelled', double:'Double trap active!', shield:'Shield trap active!', reverse:'Reverse trap active!', swap:'Swap trap active!' }
+    ar: { cancel:'فخ الالغاء: السؤال ملغي وتحصل على نقطة!', double:'فخ المضاعفة: النقطة التالية x2!', shield:'فخ الحماية: محمي من الخسارة!', reverse:'فخ العكس: الخصم يخسر نقطة!', swap:'فخ التبديل: السؤال تبدل لمتوسط!' },
+    en: { cancel:'Cancel trap: question void, you score!', double:'Double trap: next point ×2!', shield:'Shield trap: protected from loss!', reverse:'Reverse trap: opponent loses a point!', swap:'Swap trap: question swapped to medium!' }
   };
-  alert(msgs[state.lang][type]);
   document.querySelector('.modal-content').classList.add('shake');
   setTimeout(() => document.querySelector('.modal-content').classList.remove('shake'), 400);
+
   if (type === 'cancel') {
+    // cancel: dismiss question, player scores 1
     cancelTimer();
     state.currentQ.answered = true;
-    showExplanation(false, 'player');
+    showExplanation(true, 'ai'); // force correct=true so player gets the point
+    return;
   }
+  if (type === 'reverse') {
+    // reverse: AI loses 1 point immediately
+    if (state.p2score > 0) state.p2score--;
+    updateArenaUI();
+  }
+  if (type === 'swap') {
+    // swap: replace current question with a random medium one from pool not yet played
+    const mediums = state.pool30.filter(c => c.difficulty === 'medium' && !c._played && c._num !== state.currentQ.card._num);
+    if (mediums.length) {
+      const replacement = mediums[Math.floor(Math.random() * mediums.length)];
+      state.currentQ.card = replacement;
+      const text = replacement[state.lang];
+      document.getElementById('q-subject').textContent = subjectName(replacement.subject);
+      document.getElementById('q-text').textContent = text.question;
+      const optsDiv = document.getElementById('q-options');
+      optsDiv.innerHTML = '';
+      text.options.forEach((opt, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.textContent = opt;
+        btn.onclick = () => answerQuestion(i);
+        optsDiv.appendChild(btn);
+      });
+      // restart timer for new question
+      cancelTimer();
+      startTimer(55);
+    }
+  }
+  // store active trap effect for applyScore to consume (double, shield)
+  if (type === 'double' || type === 'shield') {
+    state.activeTrap = type;
+  }
+  // show feedback inside modal instead of alert
+  const feedback = document.createElement('div');
+  feedback.className = 'trap-feedback';
+  feedback.textContent = msgs[state.lang][type];
+  document.querySelector('.modal-body').prepend(feedback);
+  setTimeout(() => feedback.remove(), 2000);
 }
+
 
 /* ===== END GAME ===== */
 function endGame() {

@@ -422,6 +422,13 @@ body[dir="ltr"] .option-btn { text-align:left; }
 .trap-btn:hover { background: var(--accent); color:#fff; }
 .trap-btn:disabled { opacity:0.3; cursor:not-allowed; }
 
+.trap-feedback {
+  background: linear-gradient(135deg, var(--accent3), var(--accent));
+  color: #fff; font-weight: bold; font-size: 0.95rem;
+  padding: 10px 16px; border-radius: 10px; margin-bottom: 12px;
+  text-align: center; animation: popIn 0.3s ease-out;
+}
+
 .modal-footer {
   padding:16px 20px; border-top:1px solid rgba(255,255,255,0.06);
 }
