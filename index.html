@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تحدي الـ 30 ورقة - ثانوية عامة</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+  <!-- LANGUAGE TOGGLE -->
+  <div id="lang-toggle" class="lang-toggle">
+    <button id="btn-ar" class="active">العربية</button>
+    <button id="btn-en">English</button>
+  </div>
+
+  <!-- LANDING SCREEN -->
+  <section id="screen-landing" class="screen active">
+    <div class="landing-bg">
+      <div class="particles" id="landing-particles"></div>
+      <div class="landing-content">
+        <h1 class="game-title" data-ar="تحدي الـ 30 ورقة" data-en="30-Card Challenge">تحدي الـ 30 ورقة</h1>
+        <p class="game-subtitle" data-ar="لعبة اسئلة الثانوية العامة" data-en="Thanaweya Amma Question Game">لعبة اسئلة الثانوية العامة</p>
+        <div class="landing-buttons">
+          <button class="btn-primary" onclick="showScreen('register')" data-ar="ابدأ اللعب" data-en="Start Playing">ابدأ اللعب</button>
+          <button class="btn-secondary" onclick="showScreen('leaderboard')" data-ar="قائمة المتصدرين" data-en="Leaderboard">قائمة المتصدرين</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REGISTER SCREEN -->
+  <section id="screen-register" class="screen">
+    <div class="card-box">
+      <h2 data-ar="تسجيل اللاعب" data-en="Player Registration">تسجيل اللاعب</h2>
+      <input type="text" id="reg-name" placeholder="الاسم / Name" required>
+      <input type="email" id="reg-email" placeholder="البريد الالكتروني / Email" required>
+      <button class="btn-primary" onclick="registerPlayer()" data-ar="التالي" data-en="Next">التالي</button>
+    </div>
+  </section>
+
+  <!-- TRACK SELECT SCREEN -->
+  <section id="screen-track" class="screen">
+    <div class="card-box">
+      <h2 data-ar="اختر مسارك" data-en="Choose Your Track">اختر مسارك</h2>
+      <div class="track-options">
+        <div class="track-card" onclick="selectTrack('science')">
+          <div class="track-icon">🧬</div>
+          <h3 data-ar="علمي علوم" data-en="Science">علمي علوم</h3>
+          <p data-ar="احياء + فيزياء + كيمياء + عربي + انجليزي" data-en="Biology + Physics + Chemistry + Arabic + English">احياء + فيزياء + كيمياء + عربي + انجليزي</p>
+        </div>
+        <div class="track-card" onclick="selectTrack('math')">
+          <div class="track-icon">📐</div>
+          <h3 data-ar="علمي رياضة" data-en="Mathematics">علمي رياضة</h3>
+          <p data-ar="رياضيات + فيزياء + كيمياء + عربي + انجليزي" data-en="Math + Physics + Chemistry + Arabic + English">رياضيات + فيزياء + كيمياء + عربي + انجليزي</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RULES SCREEN -->
+  <section id="screen-rules" class="screen">
+    <div class="card-box rules-box">
+      <h2 data-ar="قواعد اللعبة" data-en="Game Rules">قواعد اللعبة</h2>
+      <div class="rules-content" id="rules-text">
+        <ul>
+          <li data-ar="٣٠ ورقة معروضة، كل لاعب يختار ١٥ ورقة بسرعة" data-en="30 cards displayed, each player picks 15 cards quickly">٣٠ ورقة معروضة، كل لاعب يختار ١٥ ورقة بسرعة</li>
+          <li data-ar="حد الاختيار: متوسط ٥ كحد أقصى · صعب ١٠ كحد أقصى (لا توجد أسئلة سهلة)" data-en="Selection limit: max 5 Medium · max 10 Hard (no easy questions)">حد الاختيار: متوسط ٥ كحد أقصى · صعب ١٠ كحد أقصى (لا توجد أسئلة سهلة)</li>
+          <li data-ar="بعد الاختيار، تقلب الاوراق وتظهر الارقام" data-en="After selection, cards flip and show numbers">بعد الاختيار، تقلب الاوراق وتظهر الارقام</li>
+          <li data-ar="كل لاعب يلقي ورقة في الساحة ويظهر السؤال" data-en="Each player throws a card in the arena and the question appears">كل لاعب يلقي ورقة في الساحة ويظهر السؤال</li>
+          <li data-ar="الاسئلة العادية: ٥٥ ثانية | المعقدة: ١١١ ثانية" data-en="Normal questions: 55s | Complex: 111s">الاسئلة العادية: ٥٥ ثانية | المعقدة: ١١١ ثانية</li>
+          <li data-ar="لكل لاعب ٣ افخاخ في الجولة" data-en="Each player has 3 traps per round">لكل لاعب ٣ افخاخ في الجولة</li>
+        </ul>
+        <div class="trap-list">
+          <h3 data-ar="الافخاخ" data-en="Traps">الافخاخ</h3>
+          <div class="trap-item"><span>✕</span> <span data-ar="فخ الالغاء - يلغي السؤال" data-en="Cancel Trap - Cancels the question">فخ الالغاء - يلغي السؤال</span></div>
+          <div class="trap-item"><span>⚡️</span> <span data-ar="فخ المضاعفة - 2x النقاط" data-en="Double Trap - 2x points">فخ المضاعفة - 2x النقاط</span></div>
+          <div class="trap-item"><span>🛡</span> <span data-ar="فخ الحماية - تحمي من خصم النقاط" data-en="Shield Trap - Protects from point loss">فخ الحماية - تحمي من خصم النقاط</span></div>
+          <div class="trap-item"><span>🔄</span> <span data-ar="عكس النتيجة - يفقد الخصم نقطة" data-en="Reverse Trap - Opponent loses a point">عكس النتيجة - يفقد الخصم نقطة</span></div>
+          <div class="trap-item"><span>⇆</span> <span data-ar="المبدل - يستبدل سؤالا صعبا بسهل" data-en="Swap Trap - Replaces a hard question with easy">المبدل - يستبدل سؤالا صعبا بسهل</span></div>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="startCardSelect()" data-ar="فهمت، لنبدأ!" data-en="Got it, let's start!">فهمت، لنبدأ!</button>
+    </div>
+  </section>
+
+  <!-- CARD SELECT SCREEN -->
+  <section id="screen-card-select" class="screen">
+    <div class="select-header">
+      <h2 data-ar="اختر ١٥ ورقة" data-en="Pick 15 Cards">اختر ١٥ ورقة</h2>
+      <div class="select-counter">
+        <span id="pick-count">0</span><span>/15</span>
+      </div>
+      <div class="select-timer" id="select-timer">30</div>
+    </div>
+    <div id="quota-indicators" class="quota-indicators"></div>
+    <div class="cards-grid" id="cards-grid"></div>
+    <button class="btn-primary" id="btn-confirm-pick" onclick="confirmPick()" disabled data-ar="تاكيد الاختيار" data-en="Confirm Selection">تاكيد الاختيار</button>
+  </section>
+
+  <!-- GAME ARENA SCREEN -->
+  <section id="screen-arena" class="screen">
+    <div class="arena-header">
+      <div class="player-score-box" id="p1-box">
+        <div class="player-name" id="p1-name">Player</div>
+        <div class="player-score" id="p1-score">0</div>
+        <div class="trap-count" id="p1-traps">🛡 <span>3</span></div>
+      </div>
+      <div class="round-info">
+        <div class="round-num" id="round-display">1/15</div>
+        <div class="turn-indicator" id="turn-indicator" data-ar="دورك" data-en="Your Turn">دورك</div>
+      </div>
+      <div class="player-score-box ai-box" id="p2-box">
+        <div class="player-name" data-ar="الخصم" data-en="Opponent">الخصم</div>
+        <div class="player-score" id="p2-score">0</div>
+        <div class="trap-count" id="p2-traps">🛡 <span>3</span></div>
+      </div>
+    </div>
+
+    <div class="arena-body">
+      <div class="arena-left">
+        <div class="battle-ground" id="battle-ground">
+          <div class="ground-label" data-ar="ساحة اللعب" data-en="Battle Arena">ساحة اللعب</div>
+          <div class="played-cards" id="played-cards"></div>
+        </div>
+        <div class="hand-area" id="hand-area"></div>
+      </div>
+      <div class="arena-right">
+        <canvas id="minigame-canvas" width="400" height="500"></canvas>
+        <div class="minigame-score">⭐ <span id="mini-score">0</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUESTION MODAL -->
+  <div id="question-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="subject-tag" id="q-subject">Subject</div>
+        <div class="timer-bar"><div id="timer-fill"></div></div>
+        <div class="timer-text" id="timer-text">55</div>
+        <button class="close-modal" onclick="closeQuestion()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="question-text" id="q-text"></div>
+        <div class="options-grid" id="q-options"></div>
+        <div class="trap-actions" id="trap-actions">
+          <span data-ar="تفعيل فخ:" data-en="Activate Trap:">تفعيل فخ:</span>
+          <button class="trap-btn" id="trap-cancel" onclick="activateTrap('cancel')">✕</button>
+          <button class="trap-btn" id="trap-double" onclick="activateTrap('double')">⚡️</button>
+          <button class="trap-btn" id="trap-shield" onclick="activateTrap('shield')">🛡</button>
+          <button class="trap-btn" id="trap-reverse" onclick="activateTrap('reverse')">🔄</button>
+          <button class="trap-btn" id="trap-swap" onclick="activateTrap('swap')">⇆</button>
+        </div>
+      </div>
+      <div class="modal-footer" id="q-explanation" style="display:none;">
+        <div class="explanation-box">
+          <h4 data-ar="الشرح" data-en="Explanation">الشرح</h4>
+          <p id="exp-text"></p>
+          <button class="btn-primary" onclick="nextTurn()" data-ar="التالي" data-en="Next">التالي</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROUND RESULT OVERLAY -->
+  <div id="result-overlay" class="overlay">
+    <div class="overlay-content">
+      <h2 id="result-title"></h2>
+      <div class="result-scores">
+        <div><span id="res-p1-name"></span>: <span id="res-p1"></span></div>
+        <div><span data-ar="الخصم" data-en="Opponent"></span>: <span id="res-p2"></span></div>
+      </div>
+      <button class="btn-primary" onclick="backToMenu()" data-ar="القائمة الرئيسية" data-en="Main Menu">القائمة الرئيسية</button>
+    </div>
+  </div>
+
+  <!-- LEADERBOARD SCREEN -->
+  <section id="screen-leaderboard" class="screen">
+    <div class="card-box">
+      <h2 data-ar="قائمة المتصدرين" data-en="Leaderboard">قائمة المتصدرين</h2>
+      <table class="leaderboard-table" id="lb-table">
+        <thead>
+          <tr>
+            <th data-ar="الترتيب" data-en="Rank">#</th>
+            <th data-ar="الاسم" data-en="Name">الاسم</th>
+            <th data-ar="المسار" data-en="Track">المسار</th>
+            <th data-ar="النقاط" data-en="Score">النقاط</th>
+          </tr>
+        </thead>
+        <tbody id="lb-body"></tbody>
+      </table>
+      <button class="btn-secondary" onclick="showScreen('landing')" data-ar="رجوع" data-en="Back">رجوع</button>
+    </div>
+  </section>
+</div>
+
+<script src="js/questions.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
